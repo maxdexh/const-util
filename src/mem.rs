@@ -6,6 +6,13 @@ use core::{
 /// Gets a reference to the contents of a `ManuallyDrop`.
 ///
 /// This function is a const version of the `Deref` implementation of `ManuallyDrop`.
+///
+/// # Example
+/// ```
+/// use const_util::mem::man_drop_ref;
+/// use core::mem::ManuallyDrop;
+/// assert_eq!(man_drop_ref(&ManuallyDrop::new(1)), &1);
+/// ```
 pub const fn man_drop_ref<T>(man: &ManuallyDrop<T>) -> &T {
     // SAFETY: repr(transparent)
     unsafe { &*ptr::from_ref(man).cast() }
@@ -13,6 +20,13 @@ pub const fn man_drop_ref<T>(man: &ManuallyDrop<T>) -> &T {
 /// Gets a reference to the contents of a `ManuallyDrop`.
 ///
 /// This function is a const version of the `DerefMut` implementation of `ManuallyDrop`.
+///
+/// # Example
+/// ```
+/// use const_util::mem::man_drop_mut;
+/// use core::mem::ManuallyDrop;
+/// assert_eq!(man_drop_mut(&mut ManuallyDrop::new(1)), &mut 1);
+/// ```
 pub const fn man_drop_mut<T>(man: &mut ManuallyDrop<T>) -> &mut T {
     // SAFETY: repr(transparent)
     unsafe { &mut *ptr::from_mut(man).cast() }
@@ -25,6 +39,24 @@ pub const fn man_drop_mut<T>(man: &mut ManuallyDrop<T>) -> &mut T {
 ///
 /// This function is useful to avoid accidentally converting a mutable reference to an immutable
 /// one when copying around code.
+///
+/// # Example
+/// ```
+/// use const_util::mem::nonnull_from;
+/// use core::ptr::NonNull;
+///
+/// let mut x = 1;
+/// assert_eq!(
+///     nonnull_from(&x),
+///     NonNull::from(&x),
+/// );
+/// assert_eq!(
+///     nonnull_from(&mut x),
+///     NonNull::from(&mut x),
+/// );
+/// unsafe { nonnull_from(&mut x).write(2) };
+/// assert_eq!(unsafe { nonnull_from(&x).read() }, 2);
+/// ```
 pub const fn nonnull_from<T: ?Sized>(src: impl hidden::Reference<Referee = T>) -> NonNull<T> {
     const fn doit<T: ?Sized, R: hidden::Reference<Referee = T>>(src: R) -> NonNull<R::Referee> {
         let ptr: *mut T = {
