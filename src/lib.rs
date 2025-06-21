@@ -1,4 +1,4 @@
-#![cfg_attr(not(any(doc, test)), no_std)]
+#![cfg_attr(not(test), no_std)]
 
 //! Provides stable const implementations for some things missing from the standard library.
 //!
@@ -11,20 +11,7 @@
 //! - [`man_drop_ref`](crate::mem::man_drop_ref)/[`man_drop_mut`](crate::mem::man_drop_mut) as a workaround for the lack of const
 //!   [`Deref`](core::ops::Deref) implementations
 
-/// A constant value
-pub trait Const {
-    /// The type of the constant
-    type Type;
-    /// The value of the constant
-    const VALUE: Self::Type;
-}
-/// Alias for [`Const::VALUE`].
-///
-/// Note that functions are evaluated more lazily than associated consts in const contexts by the
-/// current compiler.
-pub const fn value_of<C: Const>() -> C::Type {
-    C::VALUE
-}
+pub use type_const::{self, value_of, Const};
 
 pub mod concat;
 pub mod mem;
