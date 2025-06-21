@@ -1,3 +1,5 @@
+//! Functions for unwrapping [`Result`]s
+
 use crate::mem::man_drop_ref;
 use core::{mem::ManuallyDrop, ptr};
 

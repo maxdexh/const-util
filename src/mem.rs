@@ -1,3 +1,5 @@
+//! Functions related to [`core::mem`] and [`core::ptr`]
+
 use core::{
     mem::ManuallyDrop,
     ptr::{self, NonNull},

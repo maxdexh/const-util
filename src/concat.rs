@@ -1,3 +1,5 @@
+//! Functions for concatenating slices
+
 use crate::Const;
 
 struct TwoValues<A, B>(A, B);

@@ -1,4 +1,5 @@
 #![cfg_attr(not(test), no_std)]
+#![allow(rustdoc::redundant_explicit_links)]
 
 //! Provides stable const implementations for some things missing from the standard library.
 //!
