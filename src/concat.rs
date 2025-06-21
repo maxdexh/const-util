@@ -76,7 +76,7 @@ macro_rules! generate_slice_concat {
             const DESIRED_GENERIC: usize = {
                 let mut slices = crate::value_of::<C>();
                 let mut out = 0;
-                while let Some((first, rest)) = slices.split_first() {
+                while let [first, rest @ ..] = slices {
                     out += first.len();
                     slices = rest;
                 }
@@ -86,7 +86,7 @@ macro_rules! generate_slice_concat {
                 let mut out = [const { $default }; N];
                 let mut out_slice: &mut [_] = &mut out;
                 let mut slices = crate::value_of::<C>();
-                while let Some((first, rest)) = slices.split_first() {
+                while let [first, rest @ ..] = slices {
                     let lhs;
                     (lhs, out_slice) = out_slice.split_at_mut(first.len());
                     copy_from_slice(first, lhs);
