@@ -1,6 +1,6 @@
 [package]
 name = "const-util"
-version = "2.0.0"
+version = "2.1.0"
 edition = "2021"
 rust-version = "1.83"
 license = "MIT"
@@ -13,6 +13,6 @@ keywords = ["no_std", "const"]
 authors = ["Max Dexheimer <maxdexh03@gmail.com>"]
 
 [dependencies]
-generic-upper-bound = "3.0.2"
+generic-upper-bound = "3.1.1"
+type-const = "1.1.1"
 rustversion = "1.0.21"
-type-const = "1.0.1"

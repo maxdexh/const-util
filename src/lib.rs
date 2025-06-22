@@ -12,7 +12,8 @@
 //! - [`man_drop_ref`](crate::mem::man_drop_ref)/[`man_drop_mut`](crate::mem::man_drop_mut) as a workaround for the lack of const
 //!   [`Deref`](core::ops::Deref) implementations
 
-pub use type_const::{self, value_of, Const};
+pub extern crate type_const;
+pub use type_const::{value_of, Const};
 
 pub mod concat;
 pub mod mem;
