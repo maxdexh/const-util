@@ -12,6 +12,7 @@
 //!   conveniently
 //! - [`man_drop_ref`](crate::mem::man_drop_ref)/[`man_drop_mut`](crate::mem::man_drop_mut) as a workaround for the lack of const
 //!   [`Deref`](core::ops::Deref) implementations
+//! - Functions in [`slice`](crate::slice) to take subslices using ranges
 
 pub extern crate type_const;
 pub use type_const::{value_of, Const};

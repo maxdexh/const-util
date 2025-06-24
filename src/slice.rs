@@ -1,3 +1,5 @@
+//! Const variants of functions for dealing with slices
+
 use core::ops::{Bound, Range, RangeFrom, RangeFull, RangeInclusive, RangeTo, RangeToInclusive};
 mod hidden {
     use super::*;
