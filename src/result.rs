@@ -1,8 +1,5 @@
 //! Functions for unwrapping [`Result`]s
 
-use crate::mem::man_drop_ref;
-use core::{mem::ManuallyDrop, ptr};
-
 /// # Safety
 /// The matchee must be passed by value
 macro_rules! expect_variant {

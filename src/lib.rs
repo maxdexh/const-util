@@ -18,6 +18,7 @@ pub use type_const::{value_of, Const};
 pub mod concat;
 pub mod mem;
 pub mod result;
+pub mod slice;
 
 #[doc(hidden)]
 #[macro_export]

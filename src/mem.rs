@@ -64,13 +64,13 @@ pub const fn nonnull_from<T: ?Sized>(src: impl hidden::Reference<Referee = T>) -
         let ptr: *mut T = {
             let src = ManuallyDrop::new(src);
             if R::MUTABLE {
-                // SAFETY: &mut T to *mut T transmute
-                let ptr: *mut T = unsafe { core::mem::transmute_copy(&src) };
+                // SAFETY: &'a mut T to &'b mut T transmute
+                let ptr: &mut T = unsafe { core::mem::transmute_copy(&src) };
                 ptr
             } else {
-                // SAFETY: &T to *const T transmute
-                let ptr: *const T = unsafe { core::mem::transmute_copy(&src) };
-                ptr.cast_mut()
+                // SAFETY: &'a T to &'b T transmute
+                let ptr: &T = unsafe { core::mem::transmute_copy(&src) };
+                ptr::from_ref(ptr).cast_mut()
             }
         };
         // SAFETY: References are non-null
