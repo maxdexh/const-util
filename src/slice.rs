@@ -17,24 +17,31 @@ mod hidden {
     pub unsafe trait RangeIndex {
         const KIND: IndexKind;
     }
+    // SAFETY: `KIND` is unique
     unsafe impl RangeIndex for Range<usize> {
         const KIND: IndexKind = IndexKind::Range;
     }
+    // SAFETY: `KIND` is unique
     unsafe impl RangeIndex for RangeInclusive<usize> {
         const KIND: IndexKind = IndexKind::RangeInc;
     }
+    // SAFETY: `KIND` is unique
     unsafe impl RangeIndex for RangeToInclusive<usize> {
         const KIND: IndexKind = IndexKind::RangeToInc;
     }
+    // SAFETY: `KIND` is unique
     unsafe impl RangeIndex for RangeFrom<usize> {
         const KIND: IndexKind = IndexKind::RangeFrom;
     }
+    // SAFETY: `KIND` is unique
     unsafe impl RangeIndex for RangeFull {
         const KIND: IndexKind = IndexKind::RangeFull;
     }
+    // SAFETY: `KIND` is unique
     unsafe impl RangeIndex for RangeTo<usize> {
         const KIND: IndexKind = IndexKind::RangeTo;
     }
+    // SAFETY: `KIND` is unique
     unsafe impl RangeIndex for (Bound<usize>, Bound<usize>) {
         const KIND: IndexKind = IndexKind::BoundPair;
     }
@@ -46,7 +53,9 @@ use core::ptr::NonNull;
 const fn transmute_generic<Src: RangeIndex, Dst: RangeIndex>(src: Src) -> Dst {
     assert!(const { Src::KIND as u8 == Dst::KIND as u8 });
     let src = core::mem::ManuallyDrop::new(src);
-    unsafe { core::mem::transmute_copy(crate::mem::man_drop_ref(&src)) }
+    // SAFETY: `KIND` uniquely identifies the implementor, meaning that `Src` and `Dst` are the
+    // same type, so this is a safe transmute from `ManuallyDrop<T>` to `T`
+    unsafe { core::mem::transmute_copy(&src) }
 }
 
 const fn into_range<R: RangeIndex>(range: R, len: usize) -> Option<Range<usize>> {
@@ -99,6 +108,9 @@ const fn into_range<R: RangeIndex>(range: R, len: usize) -> Option<Range<usize>>
     })
 }
 
+/// # Safety
+/// `slice` must come from a mutable or immutable reference. The returned pointer is valid for
+/// reborrowing as a subslice with the same mutability as the original reference.
 const unsafe fn slice_get_nonnull<T, R>(slice: NonNull<[T]>, range: R) -> Option<NonNull<[T]>>
 where
     R: RangeIndex,
@@ -110,8 +122,14 @@ where
         Some(it) if end <= slice.len() => it,
         _ => return None,
     };
+    // SAFETY: `slice` came from a reference and `start <= end < slice.len()`, so the pointer
+    // addition is in-bounds. The returned pointer can reborrowed as a valid subslice with the
+    // same mutability because `start + new_len = start + end - start = end < slice.len()`.
     Some(unsafe { NonNull::slice_from_raw_parts(slice.cast::<T>().add(start), new_len) })
 }
+/// # Safety
+/// `slice` must come from a mutable or immutable reference. The returned pointer is valid for
+/// reborrowing as a subslice with the same mutability as the original reference.
 #[track_caller]
 const unsafe fn slice_index_nonnull<T, R>(slice: NonNull<[T]>, range: R) -> NonNull<[T]>
 where
@@ -190,6 +208,9 @@ where
         }
         end_too_large_fail(end, slice.len());
     }
+    // SAFETY: `slice` came from a reference and `start <= end < slice.len()`, so the pointer
+    // addition is in-bounds. The returned pointer can reborrowed as a valid subslice with the
+    // same mutability because `start + new_len = start + end - start = end < slice.len()`.
     unsafe { NonNull::slice_from_raw_parts(slice.cast::<T>().add(start), new_len) }
 }
 
@@ -198,6 +219,8 @@ pub const fn slice_get<T, I>(slice: &[T], index: I) -> Option<&[T]>
 where
     I: RangeIndex,
 {
+    // SAFETY: `slice` comes from a reference and the resulting pointer is a valid
+    // subslice with the same mutability
     unsafe {
         match slice_get_nonnull(nonnull_from(slice), index) {
             Some(r) => Some(r.as_ref()),
@@ -210,6 +233,8 @@ pub const fn slice_index<T, I>(slice: &[T], index: I) -> &[T]
 where
     I: RangeIndex,
 {
+    // SAFETY: `slice` comes from a reference and the resulting pointer is a valid
+    // subslice with the same mutability
     unsafe { slice_index_nonnull(nonnull_from(slice), index).as_ref() }
 }
 
@@ -218,6 +243,8 @@ pub const fn slice_get_mut<T, I>(slice: &mut [T], index: I) -> Option<&mut [T]>
 where
     I: RangeIndex,
 {
+    // SAFETY: `slice` comes from a reference and the resulting pointer is a valid
+    // subslice with the same mutability
     unsafe {
         match slice_get_nonnull(nonnull_from(slice), index) {
             Some(mut r) => Some(r.as_mut()),
@@ -231,6 +258,8 @@ pub const fn slice_index_mut<T, I>(slice: &mut [T], index: I) -> &mut [T]
 where
     I: RangeIndex,
 {
+    // SAFETY: `slice` comes from a reference and the resulting pointer is a valid
+    // subslice with the same mutability
     unsafe { slice_index_nonnull(nonnull_from(slice), index).as_mut() }
 }
 

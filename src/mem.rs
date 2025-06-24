@@ -85,10 +85,12 @@ mod hidden {
         type Referee: ?Sized;
         const MUTABLE: bool;
     }
+    // SAFETY: trivial
     unsafe impl<T: ?Sized> Reference for &T {
         type Referee = T;
         const MUTABLE: bool = false;
     }
+    // SAFETY: trivial
     unsafe impl<T: ?Sized> Reference for &mut T {
         type Referee = T;
         const MUTABLE: bool = true;
