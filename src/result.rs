@@ -3,6 +3,20 @@
 use crate::mem::man_drop_ref;
 use core::{mem::ManuallyDrop, ptr};
 
+/// # Safety
+/// The matchee must be passed by value
+macro_rules! expect_variant {
+    ($ex:expr, $variant:path, $msg:expr) => {{
+        let val = ::core::mem::ManuallyDrop::new($ex);
+        let val = $crate::mem::man_drop_ref(&val);
+        let $variant(val) = val else {
+            panic!("{}", $msg);
+        };
+        // SAFETY: ManuallyDrop holds the pointee by value and is not used afterwards
+        ::core::ptr::read(val)
+    }};
+}
+
 /// Const version of [`Result::expect`] without the [`Debug`] formatting.
 ///
 /// Can also be used in combination with [`Result::is_ok`] to match the result.
@@ -21,15 +35,8 @@ use core::{mem::ManuallyDrop, ptr};
 /// ```
 #[track_caller]
 pub const fn expect_ok<T, E>(res: Result<T, E>, message: &str) -> T {
-    let res = ManuallyDrop::new(res);
-    match man_drop_ref(&res) {
-        // SAFETY: Reading from behind a ManuallyDrop that is not used afterwards
-        Ok(ok) => unsafe { ptr::read(ok) },
-        Err(_) => {
-            let _res = ManuallyDrop::into_inner(res);
-            panic!("{}", message)
-        }
-    }
+    // SAFETY: `res` is passed by value
+    unsafe { expect_variant!(res, Ok, message) }
 }
 /// Const version of [`Result::unwrap`] without the [`Debug`] formatting.
 ///
@@ -69,15 +76,8 @@ pub const fn unwrap_ok<T, E>(res: Result<T, E>) -> T {
 /// ```
 #[track_caller]
 pub const fn expect_err<T, E>(res: Result<T, E>, message: &str) -> E {
-    let res = ManuallyDrop::new(res);
-    match man_drop_ref(&res) {
-        // SAFETY: Reading from behind a ManuallyDrop that is not used afterwards
-        Err(err) => unsafe { ptr::read(err) },
-        Ok(_) => {
-            let _res = ManuallyDrop::into_inner(res);
-            panic!("{}", message)
-        }
-    }
+    // SAFETY: `res` is passed by value
+    unsafe { expect_variant!(res, Err, message) }
 }
 /// Const version of [`Result::unwrap_err`] without the [`Debug`] formatting.
 ///
